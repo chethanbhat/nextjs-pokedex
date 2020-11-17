@@ -1,65 +1,58 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Layout from '../components/Layout';
+import Link from 'next/link';
 
-export default function Home() {
+export default function Home({pokemon}) {
+
+  const paddedIndex = (index) => ("00" + (index + 1)).slice(-3);
+
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
+    <Layout title="NextJS Pokedex">
+      <h1 className="text-4xl mb-8 text-center">
+        NextJS Pokedex
+      </h1>
+      <ul className="flex flex-wrap justify-start sm:justify-center">
+        {
+          pokemon.map((poke, index) => (
+            <li key={index} className="w-40 mx-2">
+              <Link href={`/pokemon?id=${index + 1}`}>
+                <a>
+                  <div className="card border p-4 border-gray my-2 capitalize items-center text-lg bg-gray-200 shadow">
+                    <img className="w-20 h-20" src={poke.image} alt={poke.name}/>
+                    <span className="block my-2 text-xs tracking-widest">{paddedIndex(index)}</span>
+                    <p className="font-bold text-xl tracking-wider">{poke.name}</p>
+                  </div>
+                </a>
+              </Link>
+            </li>
+          ))
+        }
+      </ul>
+    </Layout>
   )
+}
+
+export async function getStaticProps(context){
+
+  try {
+    const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
+    const {results} = await res.json();
+    const pokemon = results.map((result, index) => {
+      const paddedIndex = ("00" + (index + 1)).slice(-3);
+      const image = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${paddedIndex}.png`
+      return {
+        ...result,
+        image,
+        paddedIndex
+      }
+    });
+
+  return {
+    props: {pokemon}
+  }
+
+
+  } catch (error) {
+    console.error(error);
+  }
+
 }
